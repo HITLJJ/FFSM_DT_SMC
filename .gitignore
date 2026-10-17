@@ -8,6 +8,7 @@ codegen/
 results/stage1/
 results/stage2/
 results/stage3a/
+results/closed_loop/
 
 # Temporary PDF inspection output
 tmp/

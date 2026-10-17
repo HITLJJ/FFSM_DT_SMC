@@ -1,6 +1,8 @@
 # FFSM_DT_SMC
 
-Stage 1 implements and validates the planar 3+2 free-floating robot dynamics
+This repository develops a planar 3+2 free-floating robot from validated
+dynamics through certified uncertainty bounds to an exploratory
+Plant-Digital-Twin-SMC closed loop.
 
 ```text
 Q = [x_b, y_b, psi, q_1, q_2]^T,
@@ -17,12 +19,15 @@ From the repository root:
 
 ```matlab
 addpath(genpath(pwd));
-results = run_stage1_tests;       % automated acceptance tests
-summary = run_stage1_validation;  % experiments A-C, MAT, FIG, PNG and AVI
+run_stage1_tests;                 % validated full/reduced dynamics
+run_stage2_tests;                 % certified reference-torque baseline
+run_stage3a_tests;                % certified Taylor-Hessian bounds
+run_closed_loop_tests;            % Plant-DT-SMC interface/regression tests
+summary = run_closed_loop_comparison; % MAT, CSV, FIG and PNG
 ```
 
-The experiment output is written to `results/stage1/`. Numerical settings and
-acceptance thresholds are in `config/stage1_config.m`. The optional independent
+Closed-loop output is written to `results/closed_loop/`; earlier stage outputs
+remain in their respective result directories. The optional Stage-1 independent
 symbolic cross-check is:
 
 ```matlab
@@ -43,7 +48,11 @@ symbolic operations and never use `inv()`.
 - `results/`: generated reproducibility artifacts
 - `docs/`: stage reports
 - `references/`: additional reference material
-- `src/uncertainty/`, `src/controllers/`, `src/digital_twin/`: reserved for later stages
+- `src/uncertainty/`: certified and exploratory bound interfaces
+- `src/controllers/`: fixed, adaptive and bound-scheduled SMC
+- `src/digital_twin/`: isolated synchronization and exploratory online updates
 
-Stage 1 deliberately does not implement sliding-mode control, certified
-uncertainty bounds, online identification or digital-twin model updates.
+Stage 2 and Stage 3A certificates remain distinct from exploratory closed-loop
+methods. The local Taylor candidate and online parameter-set update are never
+reported as certified. See `docs/closed_loop_research_report.md` for results,
+limitations and the strict/exploratory boundary.
