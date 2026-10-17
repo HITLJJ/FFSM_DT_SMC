@@ -1,0 +1,11 @@
+# MATLAB generated files
+*.asv
+*.m~
+slprj/
+codegen/
+
+# Generated stage-1 artifacts (keep the directory marker)
+results/stage1/
+
+# Temporary PDF inspection output
+tmp/

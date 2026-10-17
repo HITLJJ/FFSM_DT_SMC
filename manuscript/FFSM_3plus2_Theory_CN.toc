@@ -1,0 +1,30 @@
+\contentsline {section}{\numberline {I}目标、适用范围与证明边界}{2}{section.1}%
+\contentsline {section}{\numberline {II}平面 $3+2$ 机械系统与完整动力学}{2}{section.2}%
+\contentsline {subsection}{\numberline {\mbox {II-A}}坐标、刚体及几何定义}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {\mbox {II-B}}速度雅可比及动能}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {\mbox {II-C}}Euler--Lagrange 方程及被动输入矩阵}{4}{subsection.2.3}%
+\contentsline {subsection}{\numberline {\mbox {II-D}}守恒量及其适用条件}{4}{subsection.2.4}%
+\contentsline {section}{\numberline {III}被动基座消元与零动量约化}{4}{section.3}%
+\contentsline {subsection}{\numberline {\mbox {III-A}}Schur 补及一般代数约化}{4}{subsection.3.1}%
+\contentsline {subsection}{\numberline {\mbox {III-B}}零动量约束与仅由关节坐标描述的约化模型}{5}{subsection.3.2}%
+\contentsline {section}{\numberline {IV}B 方向：结构化、可认证的动力学不确定性界}{6}{section.4}%
+\contentsline {subsection}{\numberline {\mbox {IV-A}}控制相关参考力矩映射}{6}{subsection.4.1}%
+\contentsline {subsection}{\numberline {\mbox {IV-B}}方法一：矩阵逆扰动的严格整体范数界}{6}{subsection.4.2}%
+\contentsline {paragraph}{\numberline {\mbox {IV-B}0a}同一控制力矩映射的科氏项包络}{6}{paragraph.4.2.0.1}%
+\contentsline {subsection}{\numberline {\mbox {IV-C}}严格计算证书的有限构造（算法规范）}{7}{subsection.4.3}%
+\contentsline {subsection}{\numberline {\mbox {IV-D}}方法二：参数集合支持函数与严格 Taylor 余项}{8}{subsection.4.4}%
+\contentsline {subsection}{\numberline {\mbox {IV-E}}组合证书与非劣性}{8}{subsection.4.5}%
+\contentsline {subsection}{\numberline {\mbox {IV-F}}名义力矩的极小极大选择}{9}{subsection.4.6}%
+\contentsline {section}{\numberline {V}滑模控制律与严谨稳定性分析}{9}{section.5}%
+\contentsline {subsection}{\numberline {\mbox {V-A}}理想符号滑模控制}{9}{subsection.5.1}%
+\contentsline {subsection}{\numberline {\mbox {V-B}}连续饱和近似与最终有界性}{10}{subsection.5.2}%
+\contentsline {section}{\numberline {VI}E 方向：在线集合更新及证书有效性}{11}{section.6}%
+\contentsline {subsection}{\numberline {\mbox {VI-A}}数据形成的集合约束}{11}{subsection.6.1}%
+\contentsline {subsection}{\numberline {\mbox {VI-B}}数字孪生与控制器的分工}{11}{subsection.6.2}%
+\contentsline {subsection}{\numberline {\mbox {VI-C}}模型失效时的安全适用条件}{11}{subsection.6.3}%
+\contentsline {section}{\numberline {VII}MATLAB 实施、数值验收与独立验证}{11}{section.7}%
+\contentsline {subsection}{\numberline {\mbox {VII-A}}必须分别实施的两个动力学计算器}{11}{subsection.7.1}%
+\contentsline {subsection}{\numberline {\mbox {VII-B}}建议的测试项目及判据}{12}{subsection.7.2}%
+\contentsline {subsection}{\numberline {\mbox {VII-C}}建议的 MATLAB 文件接口}{12}{subsection.7.3}%
+\contentsline {section}{\numberline {VIII}创新性审查与后续问题}{12}{section.8}%
+\contentsline {section}{参考文献}{13}{section*.3}%

@@ -1,0 +1,909 @@
+
+
+
+
+
+F
+=
+M
+r
+(
+q
+;
+θ
+)
+q
+¨
+r
++
+C
+r
+(
+q
+,
+q
+˙
+;
+θ
+)
+q
+˙
+r
+  
+  
+  
+  
+  
+  
+ 
+
+∂
+M
+r
+∂
+q
+k
+ 
+ 
+ 
+
+∥
+Δ
+F
+∥
+2
+≤
+ε
+M
+∥
+q
+¨
+r
+∥
+2
++
+ε
+C
+∥
+q
+˙
+r
+∥
+2
+  
+  
+  
+  
+  
+  
+  
+  
+ 
+ 
+
+ε
+C
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ε
+G
+,
+j
+ 
+
+
+L
+i
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+结构化动力学模型
+⟶
+严格可计算的不确定性界
+⟶
+滑模鲁棒增益
+ 
+
+ε
+G
+,
+j
+,
+L
+i
+  
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+% !TeX program = xelatex
+% 中文研究推导笔记；以用户给出的 IEEEtran 模板为排版基础。
+% 为便于学习采用 onecolumn；投稿时去掉 onecolumn 并调整公式宽度。
+\documentclass[journal,onecolumn]{IEEEtran}
+\usepackage[UTF8,fontset=fandol]{ctex}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{booktabs,array,longtable}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\allowdisplaybreaks[2]
+\newtheorem{assumption}{假设}[section]
+\newtheorem{lemma}{引理}[section]
+\newtheorem{theorem}{定理}[section]
+\newtheorem{proposition}{命题}[section]
+\newtheorem{remark}{说明}[section]
+\newcommand{\R}{\mathbb R}
+\newcommand{\Th}{\Theta}
+\newcommand{\dd}{\mathrm d}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\tr}{\mathsf T}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\sat}{\operatorname{sat}}
+\newcommand{\col}{\operatorname{col}}
+\newcommand{\cross}{\operatorname{cross}}
+\title{平面自由漂浮基座--双关节机械臂的动力学、认证不确定性界与滑模控制\\\large 中文理论推导与 MATLAB 验证指南（研究工作稿）}
+\author{研究学习用技术文档\thanks{基于 IEEEtran 模板；本文件中的“定理”均为在明确假设下的数学结论，不声称相应结构化界算法具有文献原创性。}}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+本文建立一个具有平面基座平移 $(x_b,y_b)$、基座偏航 $\psi$ 与两个主动转动关节 $(q_1,q_2)$ 的五广义自由度自由漂浮系统。由质心位置与动能显式构造完整质量矩阵、非线性向量和被动基座--主动关节分块方程；在零系统动量条件下用 Schur 补消除三维基座运动，得到两维约化关节模型，并严格区分零动量约化和一般外扰作用下的代数消元。随后提出两类\emph{条件有效}的动力学误差上界：基于矩阵逆扰动恒等式的整体范数认证界，以及基于参数集合支持函数与全域 Hessian 包络的逐通道认证界。通过 Lyapunov 分析给出使用认证边界的一阶滑模控制律及其理想控制有限时间到达结论，进一步讨论连续饱和近似的最终有界性。最后给出 MATLAB 符号/数值检查、独立对照和研究创新性判定准则。本文将现有理论与尚待数值验证的研究假设严格区分。
+\end{abstract}
+\begin{IEEEkeywords}
+自由漂浮机器人，约化动力学，Schur 补，不确定性认证，集合成员辨识，滑模控制，数字孪生。
+\end{IEEEkeywords}
+\tableofcontents
+\section{目标、适用范围与证明边界}
+\noindent\textbf{研究目标：}先对 $3+2$ 平面自由漂浮机械臂完成可复现的解析动力学、零动量约化、误差界认证及滑模闭环理论，然后在 MATLAB 中验证，并为后续实物试验提供可直接检查的模型。空间 $6+6$ 是可选扩展，不是本文结论的必要条件。\\
+\textbf{特别澄清：}MATLAB 中通过数值测试不能“证明”能量守恒、覆盖所有物理参数的认证界或闭环稳定性。相关结论依赖本文件中的解析证明及明确假设；MATLAB 用于发现推导错误、重复数值实验及测量计算代价。\\
+\textbf{实物可配置性：}本研究允许通过气浮平台、初始静止、双关节内部驱动与停用基座风扇构造零总动量的理想实验基线。\emph{初始零动量不代表现实中总动量严格恒为零}：气管牵引、摩擦、风扇漏推力与接触外力仍需计入实验残差，并分别记录 $P,L_O$ 的实际漂移。理论零动量定理与有残差的实物验证结论不得混用。\\
+\textbf{模型选择：}起步固定所有刚体的几何长度与质心相对位置，仅把质量与平面转动惯量作为不确定参数。这既便于推导，也避免把可变质心位置与惯性参数仿射性混淆。未来可改用质量、一阶矩与原点惯性等一致的线性惯性参数化。
+
+\section{平面 $3+2$ 机械系统与完整动力学}
+\subsection{坐标、刚体及几何定义}
+基座 $0$、连杆 $1$、连杆 $2$ 均视为平面刚体。惯性系坐标记为 $\{\mathcal I\}$。定义
+\begin{equation}
+ Q=\col(x_b,y_b,\psi,q_1,q_2)\in\R^5,\quad
+ b=\col(x_b,y_b,\psi)\in\R^3,\quad q=\col(q_1,q_2)\in\R^2.
+ \label{eq:Q}
+\end{equation}
+设基座质心 $r=(x_b,y_b)^\tr$；基座质心到机械臂肩部在基座自身坐标中的固定距离为 $a_0$；关节 $1$ 到关节 $2$ 的连杆长度为 $\ell_1$；连杆 $1$ 的质心距关节 $1$ 为 $c_1$；连杆 $2$ 的质心距关节 $2$ 为 $c_2$。引入
+\begin{equation}
+ R(\alpha)=\begin{bmatrix}\cos\alpha&-\sin\alpha\\\sin\alpha&\cos\alpha\end{bmatrix},\quad
+ e=\col(1,0),\quad S=\begin{bmatrix}0&-1\\1&0\end{bmatrix},\quad
+ \frac{\partial R(\alpha)}{\partial\alpha}=R(\alpha)S.
+\end{equation}
+三个刚体质心的位置是
+\begin{align}
+ p_0 &= r,\label{eq:p0}\\
+ p_1 &= r+R(\psi)a_0e+R(\psi+q_1)c_1e,\label{eq:p1}\\
+ p_2 &= r+R(\psi)a_0e+R(\psi+q_1)\ell_1e+R(\psi+q_1+q_2)c_2e.\label{eq:p2}
+\end{align}
+各刚体的绝对转角及角速度为
+\begin{equation}
+ \alpha_0=\psi,\quad\alpha_1=\psi+q_1,\quad\alpha_2=\psi+q_1+q_2,\qquad \omega_i=\dot\alpha_i.
+\end{equation}
+设 $m_i>0$ 为质量，$J_i>0$ 为关于各刚体质心、垂直运动平面的极惯量。定义参数
+\begin{equation}
+ \theta=\col(m_0,m_1,m_2,J_0,J_1,J_2),\quad \theta\in\Theta_0\subset\R^6.
+\end{equation}
+物理上还需遵守质心、形状和几何参数的可实现性约束；本文第一版把 $a_0,\ell_1,c_1,c_2$ 视为准确已知常数。
+
+\subsection{速度雅可比及动能}
+令 $J_{v,i}(Q)=\partial p_i/\partial Q\in\R^{2\times5}$，$j_{\omega,i}=\partial\alpha_i/\partial Q\in\R^{1\times5}$。显式写为
+\begin{align}
+ J_{v,0}&=\begin{bmatrix}1&0&0&0&0\\0&1&0&0&0\end{bmatrix},\qquad j_{\omega,0}=\begin{bmatrix}0&0&1&0&0\end{bmatrix},\\
+ J_{v,1}&=\begin{bmatrix}I_2& S R(\psi)a_0e+S R(\psi+q_1)c_1e&S R(\psi+q_1)c_1e&0_{2\times1}\end{bmatrix},\\
+ J_{v,2}&=\begin{bmatrix}I_2& \xi_0+\xi_1+\xi_2&\xi_1+\xi_2&\xi_2\end{bmatrix},
+\end{align}
+其中 $\xi_0=SR(\psi)a_0e$, $\xi_1=SR(\psi+q_1)\ell_1e$, $\xi_2=SR(\psi+q_1+q_2)c_2e$，且
+\begin{equation}
+ j_{\omega,1}=\begin{bmatrix}0&0&1&1&0\end{bmatrix},\qquad
+ j_{\omega,2}=\begin{bmatrix}0&0&1&1&1\end{bmatrix}.
+\end{equation}
+由 $\dot p_i=J_{v,i}\dot Q$、$\omega_i=j_{\omega,i}\dot Q$，总动能可写为
+\begin{equation}
+ T(Q,\dot Q;\theta)=\frac12\sum_{i=0}^2\left(m_i\dot p_i^\tr\dot p_i+J_i\omega_i^2\right)=\frac12\dot Q^\tr H(Q;\theta)\dot Q.
+ \label{eq:T}
+\end{equation}
+因此完整惯性矩阵为
+\begin{equation}
+ \boxed{H(Q;\theta)=\sum_{i=0}^2\left[m_iJ_{v,i}^\tr J_{v,i}+J_i j_{\omega,i}^\tr j_{\omega,i}\right]\in\R^{5\times5}.}
+ \label{eq:H}
+\end{equation}
+$H$ 的表达式可以直接由 MATLAB 符号函数生成，不必人工展开全部 $25$ 个元素。
+
+\begin{lemma}[完整惯性矩阵对称正定]
+若 $m_0>0$ 且 $J_0,J_1,J_2>0$，其余刚体质量为正，则式 \eqref{eq:H} 对任意姿态 $Q$ 对称正定。
+\end{lemma}
+\begin{proof}
+对称性由每个 $J^\tr J$ 项立即得出。若 $v^\tr Hv=0$，则所有非负动能项均为零。三个刚体角速度为零给出 $v_\psi=0$、$v_{q_1}=0$、$v_{q_2}=0$；基座平动速度为零给出 $v_x=v_y=0$。故 $v=0$，因此 $H\succ0$。
+\end{proof}
+
+\subsection{Euler--Lagrange 方程及被动输入矩阵}
+在理想无势场平面气浮条件下 $L=T$。定义非线性向量 $h(Q,\dot Q;\theta)$ 的第 $i$ 个分量为
+\begin{equation}
+ h_i=\sum_{j=1}^5\sum_{k=1}^5 \Gamma_{ijk}(Q)\dot Q_j\dot Q_k,\quad
+ \Gamma_{ijk}=\frac12\left(\frac{\partial H_{ij}}{\partial Q_k}+\frac{\partial H_{ik}}{\partial Q_j}-\frac{\partial H_{jk}}{\partial Q_i}\right).
+ \label{eq:christoffel}
+\end{equation}
+对于无外部作用且只有关节 $1,2$ 驱动的系统，广义控制输入为
+\begin{equation}
+ B=\begin{bmatrix}0_{3\times2}\\I_2\end{bmatrix},\quad
+ H(Q;\theta)\ddot Q+h(Q,\dot Q;\theta)=B\tau,\quad\tau=\col(\tau_1,\tau_2).
+ \label{eq:fulldyn}
+\end{equation}
+如考虑外力 $w\in\R^5$，则式 \eqref{eq:fulldyn} 的右端增加 $w$。若实验中启用基座风扇或偏航执行器，$B$ 必须另行修改；此时不能继续声称基座完全被动。
+
+\subsection{守恒量及其适用条件}
+总质量 $M=m_0+m_1+m_2$，系统质心 $p_c=\sum_i m_ip_i/M$。定义系统总线动量与相对于\emph{固定惯性原点}的总角动量
+\begin{align}
+ P&=\sum_{i=0}^2m_i\dot p_i,\label{eq:P}\\
+ L_O&=\sum_{i=0}^2\left[p_i^\tr S^\tr(m_i\dot p_i)+J_i\omega_i\right].\label{eq:LO}
+\end{align}
+注意 $p^\tr S^\tr f=p_xf_y-p_yf_x$。对于没有外力、外力矩的理想自由漂浮系统，内部关节力矩不改变总动量，故
+\begin{equation}
+ \boxed{\dot P=0,\qquad\dot L_O=0.}
+ \label{eq:conservation}
+\end{equation}
+这给出比“关节轨迹看起来合理”更强的动力学验收依据。注意 $L_O$ 与关于质心的角动量 $L_c$ 不相同：$L_O=L_c+p_c^\tr S^\tr P$。
+
+\section{被动基座消元与零动量约化}
+\subsection{Schur 补及一般代数约化}
+分块写为
+\begin{equation}
+ H=\begin{bmatrix}A&B_c\\B_c^\tr&D\end{bmatrix},\quad
+ h=\begin{bmatrix}h_b\\h_q\end{bmatrix},\quad
+ w=\begin{bmatrix}w_b\\w_q\end{bmatrix},
+\end{equation}
+其中 $A\in\R^{3\times3},B_c\in\R^{3\times2},D\in\R^{2\times2}$。为避免与输入矩阵 $B$ 混淆，耦合分块记为 $B_c$。动力学分块方程为
+\begin{align}
+ A\ddot b+B_c\ddot q+h_b&=w_b,\label{eq:basepart}\\
+ B_c^\tr\ddot b+D\ddot q+h_q&=\tau+w_q.\label{eq:jointpart}
+\end{align}
+由于 $A\succ0$，由 \eqref{eq:basepart} 解出
+\begin{equation}
+ \ddot b=A^{-1}(w_b-h_b-B_c\ddot q).
+\end{equation}
+代入 \eqref{eq:jointpart}，得到精确代数消元式
+\begin{equation}
+ \boxed{M_r\ddot q+h_r=\tau+d_r,\quad
+ M_r=D-B_c^\tr A^{-1}B_c,\quad
+ h_r=h_q-B_c^\tr A^{-1}h_b,\quad
+ d_r=w_q-B_c^\tr A^{-1}w_b.}
+ \label{eq:reduced}
+\end{equation}
+\begin{lemma}[约化惯性矩阵正定]
+若完整矩阵 $H\succ0$，则 $M_r=D-B_c^\tr A^{-1}B_c\succ0$。
+\end{lemma}
+\begin{proof}
+对任意 $z\in\R^2\setminus\{0\}$，取 $v=\col(-A^{-1}B_cz,z)\neq0$，则 $v^\tr Hv=z^\tr M_rz>0$。
+\end{proof}
+\begin{remark}
+式 \eqref{eq:reduced} 是\emph{一般外扰存在时仍成立}的代数恒等式，但是其中 $h_r$ 通常依赖完整 $b,\dot b,q,\dot q$。因此绝不能在任意非零动量或受扰状态下，直接把 $M_r\ddot q+h_r$ 误写成只依赖 $q,\dot q$ 的独立两自由度机器人动力学。
+\end{remark}
+
+\subsection{零动量约束与仅由关节坐标描述的约化模型}
+不将三个基座坐标一概称为循环坐标。由于整体平移及平面旋转的 $SE(2)$ 对称性，无外力/外矩时守恒的是惯性系总线动量 $P$ 与关于固定原点的角动量 $L_O$。由虚功形式计算广义共轭动量，得到
+\begin{equation}
+ \frac{\partial T}{\partial\dot b}=A\dot b+B_c\dot q
+ =\col\bigl(P_x,P_y,L_O-r^\tr S^\tr P\bigr).
+ \label{eq:momentum_map}
+\end{equation}
+事实上，$\partial T/\partial\dot\psi$ 是相对于基座质心的转动广义动量；它仅在 $P=0$ 时与 $L_O$ 相等。当 $P=0$ 且 $L_O=0$，由 $A\succ0$ 严格推出
+\begin{equation}
+ \boxed{\dot b=-A^{-1}B_c\dot q.}
+ \label{eq:connection}
+\end{equation}
+该等式是零总动量条件下的速度重构约束，而非任意受扰状态下可直接使用的运动学约束。特别地，$\psi$ 通常不是当前惯性坐标参数化中的循环坐标。
+代入动能得到
+\begin{equation}
+ T_{\mathrm{red}}(q,\dot q;\theta)=\frac12\dot q^\tr M_r(q;\theta)\dot q.
+ \label{eq:Tred}
+\end{equation}
+系统整体平移与旋转不影响形状度量，因此 $M_r$ 仅依赖 $q$。为避免把非完整速度约束直接代入 Lagrangian 的逻辑跳跃，使用零动量水平的对称约化：对任意固定的 $(q,\dot q)$，动量约束的唯一解为 $\dot b=-A^{-1}B_c\dot q$；零动量 Routhian（等价地，零动量 Lagrange--Poincar\'e 形状方程的拉格朗日量）等于 $L_{\rm red}=\tfrac12\dot q^\tr M_r\dot q$。一般动量水平的连接曲率项与动量成正比；在这里动量水平为零，故该项消失。对 $L_{\rm red}$ 做 Euler--Lagrange 变分，因内部关节力矩在形状坐标上的虚功为 $\tau^\tr\delta q$，得到下式；该论证仅适用于完整模型具有上述对称性、总动量为零且无破坏该约化的外力时。
+\begin{equation}
+ \boxed{M_r(q;\theta)\ddot q+C_r(q,\dot q;\theta)\dot q=\tau.}
+ \label{eq:reducedzero}
+\end{equation}
+其中
+\begin{equation}
+ (C_r)_{ij}=\sum_{k=1}^2\frac12\left(\frac{\partial (M_r)_{ij}}{\partial q_k}+\frac{\partial(M_r)_{ik}}{\partial q_j}-\frac{\partial(M_r)_{jk}}{\partial q_i}\right)\dot q_k.
+ \label{eq:Cr}
+\end{equation}
+\begin{lemma}[零动量完整消元与形状动力学的等价性]
+令 $J_b(q,b;\theta):=-A^{-1}B_c$。在无基座外力、零总线动量及零总角动量、参数恒定且状态可微的轨迹上，完整动力学的代数消元非线性项满足
+\begin{equation}
+ \boxed{\left.\left(h_q-B_c^\tr A^{-1}h_b\right)\right|_{\dot b=J_b\dot q}=C_r(q,\dot q)\dot q.}\label{eq:directequiv}
+\end{equation}
+\end{lemma}
+\begin{proof}
+记 $J=\operatorname{col}(J_b,I_2)$，于是 $\dot Q=J\dot q$。根据动量映射 $A\dot b+B_c\dot q=0$，沿零动量轨迹对时间求导得
+$A\ddot b+B_c\ddot q+h_b=0$，这是无基座输入的 Euler--Lagrange 基座方程。另一方面 $\ddot Q=J\ddot q+\dot J\dot q$，完整动力学左乘 $J^\tr$ 后得到
+\begin{equation}
+ J^\tr HJ\ddot q+J^\tr(H\dot J\dot q+h)=\tau.\label{eq:projected}
+\end{equation}
+由 $HJ=\operatorname{col}(0,M_r)$ 严格得到 $J^\tr HJ=M_r$，且 $J^\tr H\dot J\dot q=0$（因为 $\dot J=\operatorname{col}(\dot J_b,0)$）。故 $J^\tr h=h_q-B_c^\tr A^{-1}h_b$。另一方面，零动量对称约化的形状 Euler--Lagrange 方程给出 $M_r\ddot q+C_r\dot q=\tau$。对于任意允许的 $(q,\dot q,\ddot q)$ 比较两式，得到所述恒等式。该证明使用零动量约化定理，而非独立于该定理的符号恒等式验证；为排除建模实现的共享错误，仍须对显式 $H,h$ 进行独立符号化简检验。
+\end{proof}
+
+\begin{lemma}[能量恒等式]
+在式 \eqref{eq:Cr} 的标准 Christoffel 选取下，$\dot M_r-2C_r$ 是斜对称矩阵，因此对任意 $s\in\R^2$ 有
+\begin{equation}
+ s^\tr\left(\frac12\dot M_r-C_r\right)s=0.
+\end{equation}
+\end{lemma}
+\begin{proof}
+由式 \eqref{eq:Cr} 的定义，$\dot M_{r,ij}=(\partial M_{r,ij}/\partial q_k)\dot q_k$。利用 $M_r=M_r^\tr$，逐项消去可得 $(\dot M_r-2C_r)_{ij}=-(\dot M_r-2C_r)_{ji}$，故二次型为零。
+\end{proof}
+\begin{remark}
+如果需要考虑非零初始角动量、推进器或外力，可退回式 \eqref{eq:reduced} 的完整状态依赖形式；此时必须重新检查误差动力学中的匹配项与 Lyapunov 结构，不能未经推导套用式 \eqref{eq:Cr}。
+\end{remark}
+
+\section{B 方向：结构化、可认证的动力学不确定性界}
+\subsection{控制相关参考力矩映射}
+给定关节参考运动 $q_d(t)$，定义
+\begin{equation}
+ e=q-q_d,\quad s=\dot e+\Lambda e,\quad
+ \dot q_r=\dot q_d-\Lambda e,\quad
+ \ddot q_r=\ddot q_d-\Lambda\dot e,
+ \label{eq:sliding}
+\end{equation}
+其中 $\Lambda=\Lambda^\tr\succ0$。在零动量模型 \eqref{eq:reducedzero} 下定义控制相关的模型力矩
+\begin{equation}
+ F(z,\theta)=M_r(q;\theta)\ddot q_r+C_r(q,\dot q;\theta)\dot q_r,\quad
+ z=(q,\dot q,q_d,\dot q_d,\ddot q_d).
+ \label{eq:F}
+\end{equation}
+给定真实参数包含集合 $\Theta_k$，所需的逐通道最小鲁棒力矩半径为
+\begin{equation}
+ \beta_i^\star(z,k;u_{0,i})=\sup_{\theta\in\Theta_k}\abs{F_i(z,\theta)-u_{0,i}}.
+ \label{eq:betaexact}
+\end{equation}
+这是定义，而非目前已经快速求出的算法。$\Theta_k$ 必须是紧集，$F$ 在其上连续，才能将上确界换为最大值。经典鲁棒控制仅需要一个可认证上界 $\bar\beta_i\geq\beta_i^\star$，不必精确求解 \eqref{eq:betaexact}。
+
+\subsection{方法一：矩阵逆扰动的严格整体范数界}
+为了提供不依赖局部 Taylor 近似的\emph{保底认证}，固定 $q,\dot q,\dot q_r,\ddot q_r$，令模型分块为 $A(\theta),B_c(\theta),D(\theta)$，取固定名义参数 $\hat\theta$，下标 $0$ 代表名义值。所有参数变动时均将控制相关的状态 $z$ 保持相同。假设对所有 $\theta\in\Theta_k$ 已严格证明
+\begin{equation}
+ \norm{A-A_0}_2\le\varepsilon_A,\quad\norm{B_c-B_0}_2\le\varepsilon_B,\quad\norm{D-D_0}_2\le\varepsilon_D.\label{eq:blocks}
+\end{equation}
+若 $\lambda_{\min}(A_0)>\varepsilon_A$，令
+\begin{equation}
+ \kappa_0=\norm{A_0^{-1}}_2,\quad\kappa=(\lambda_{\min}(A_0)-\varepsilon_A)^{-1},\quad\delta_{A^{-1}}=\kappa_0\varepsilon_A\kappa.
+\end{equation}
+由 Weyl 不等式与逆矩阵恒等式
+\begin{equation}
+ A^{-1}-A_0^{-1}=-A_0^{-1}(A-A_0)A^{-1}
+\end{equation}
+可得 $\norm{A^{-1}}_2\le\kappa$ 与 $\norm{A^{-1}-A_0^{-1}}_2\le\delta_{A^{-1}}$。令 $b_0=\norm{B_0}_2$，则
+\begin{equation}
+ \varepsilon_S=\varepsilon_B\kappa(b_0+\varepsilon_B)+b_0\delta_{A^{-1}}(b_0+\varepsilon_B)+b_0\kappa_0\varepsilon_B.\label{eq:epsS}
+\end{equation}
+\begin{proposition}[Schur 补惯性矩阵的确定性包络]
+在上述条件下 $\norm{M_r(\theta)-M_r(\hat\theta)}_2\le\varepsilon_M:=\varepsilon_D+\varepsilon_S$。
+\end{proposition}
+\begin{proof}
+展开
+\begin{align*}
+&B_c^\tr A^{-1}B_c-B_0^\tr A_0^{-1}B_0\\
+&=(B_c-B_0)^\tr A^{-1}B_c+B_0^\tr(A^{-1}-A_0^{-1})B_c+B_0^\tr A_0^{-1}(B_c-B_0).
+\end{align*}
+逐项用谱范数次乘性与 $\norm{B_c}_2\le b_0+\varepsilon_B$ 得出 $\varepsilon_S$；再对 $D$ 的差求三角不等式。
+\end{proof}
+
+\paragraph{同一控制力矩映射的科氏项包络}
+\emph{重要：}不能将 $h_r=C_r(q,\dot q)\dot q$ 直接替代 $C_r(q,\dot q)\dot q_r$。实际上
+\begin{equation}
+ F^{\rm alg}:=M_r\ddot q_r+h_r=F+C_r(q,\dot q)s,\qquad s=\dot q-\dot q_r,\label{eq:mapdiff}
+\end{equation}
+其中等式 $h_r=C_r\dot q$ 仅在零动量约化模型上成立。不同 $\theta$ 对应的完整基座速度 $\dot b(\theta)=-A(\theta)^{-1}B_c(\theta)\dot q$ 也不同。因此，对固定完整 $\dot b$ 建立的 $h_r$ 扰动界不能代替控制映射 $F$ 的误差证书。
+
+为直接认证 $F$，定义 $M_{r,k}:=\partial M_r/\partial q_k$ ($k=1,2$)，其中 Schur 补的显式导数为
+\begin{align}
+ M_{r,k}={}&D_{,k}-B_{c,k}^\tr A^{-1}B_c-B_c^\tr A^{-1}B_{c,k}
+ +B_c^\tr A^{-1}A_{,k}A^{-1}B_c.\label{eq:schurder}
+\end{align}
+假设对每个 $k$ 使用经过验证的全局包络（例如对解析式 \eqref{eq:schurder} 的区间运算并采用外向舍入）获得有限数字
+\begin{equation}
+ \sup_{\theta\in\Theta_k}\norm{M_{r,k}(q;\theta)-M_{r,k}(q;\hat\theta)}_2\le\varepsilon_{G,k}.\label{eq:gradcert}
+\end{equation}
+这里下标 $k$ 同时用于参数集合的时间编号时容易混淆；在式 \eqref{eq:gradcert} 中 $k\in\{1,2\}$ \emph{专指关节坐标索引}，集合的时间编号固定不变。对 $i,j\in\{1,2\}$ 定义
+\begin{align}
+ E_{ij}&:=\frac12\sum_{k=1}^2(\varepsilon_{G,k}+\varepsilon_{G,j}+\varepsilon_{G,i})|\dot q_k|,\\
+ \varepsilon_C&:=\left(\sum_{i=1}^2\sum_{j=1}^2 E_{ij}^2\right)^{1/2}.\label{eq:epsC}
+\end{align}
+\begin{proposition}[与滑模控制同对象的整体范数认证界]
+若 \eqref{eq:blocks} 与 \eqref{eq:gradcert} 有效，则对固定 $z$ 及所有 $\theta\in\Theta_k$，
+\begin{equation}
+ \boxed{\norm{F(z,\theta)-F(z,\hat\theta)}_2\le\beta^{\rm safe}:=\varepsilon_M\norm{\ddot q_r}_2+\varepsilon_C\norm{\dot q_r}_2.}\label{eq:safebound}
+\end{equation}
+特别地，可对每个分量取 $\bar\beta_i^{\rm safe}=\beta^{\rm safe}$，这是通常较保守但数学有效的逐通道共同上界。
+\end{proposition}
+\begin{proof}
+由 \eqref{eq:Cr}，任一 $\Delta C_{ij}$ 的绝对值至多为 $E_{ij}$，因为导数矩阵每个元素绝对值不超过其谱范数；因此 $\norm{\Delta C}_2\le\norm{\Delta C}_F\le\varepsilon_C$。代入 $\Delta F=\Delta M_r\ddot q_r+\Delta C_r\dot q_r$ 并用三角不等式即得结论。
+\end{proof}
+\begin{remark}[计算性质与未完成的认证任务]
+式 \eqref{eq:gradcert} 是\emph{必须真正计算且证明覆盖有效}的证书前提，并非仅靠随机采样就能保证。可通过已知物理参数盒 $\Theta_0$ 和紧致状态域对 $A,B_c,D$ 及一阶 $q$ 导数的显式表达式实施有向舍入区间计算；区间分母的最小特征值下界须正，且需考虑依赖性所引入的保守性。未经运行并审计该计算前，本节的结果仅为\emph{条件有效的构造定理}，不宣称已有数值认证器。
+\end{remark}
+
+\subsection{严格计算证书的有限构造（算法规范）}
+以下给出可实施的\emph{覆盖算法}，但不宣称本稿已完成面向实际数据的经验证区间计算。设六维惯性参数域 $\Theta$ 为闭有界的物理可行盒（若为多面体，可先取其外包盒，允许更保守），关节状态 $z$ 固定或置于给定紧致状态盒 $Z$。已知 $m_i,J_i$ 的正下界，使 $H\succ0$ 在该盒及其凸包成立。区间运算均采用向外舍入、包含正确的初等函数包络与包含正确的区间线性代数；仅用普通浮点端点运算不构成认证。
+\begin{enumerate}[label=(A\arabic*)]
+\item 按式 \eqref{eq:schurder} 构造 $A,B_c,D,A_{,j},B_{c,j},D_{,j}$ 的解析表达式。将参数盒（及必要时的 $Z$）细分为有限子盒 $X_\ell$，以包含正确的区间求值器形成矩阵包络 $[A]_{\ell},[B_c]_{\ell},[D]_{\ell}$ 及导数包络。
+\item 对每个子盒计算 $A$ 的\emph{经过认证的正定下界} $\underline a_\ell>0$ 和包含 $A^{-1}$ 的区间矩阵 $[A^{-1}]_\ell$。可使用经验证 Cholesky/区间线性方程求解器；若无法认证，则继续划分或提高精度，不得将失败子盒丢弃。
+\item 用包含运算组合 $[M_{r,j}]_\ell=[D_{,j}]_\ell-[B_{c,j}]_\ell^\tr[A^{-1}]_\ell[B_c]_\ell-[B_c]_\ell^\tr[A^{-1}]_\ell[B_{c,j}]_\ell+[B_c]_\ell^\tr[A^{-1}]_\ell[A_{,j}]_\ell[A^{-1}]_\ell[B_c]_\ell$。减去名义导数后，若每元素满足区间 $[g_{ab}]$，则取 $G_{ab}=\max(|\inf[g_{ab}]|,|\sup[g_{ab}]|)$，并令 $\varepsilon_{G,j}=\max_\ell(\sum_{a,b}G_{ab,\ell}^2)^{1/2}$ 的向上舍入结果。这样直接构造式 \eqref{eq:gradcert} 所需数值。
+\item 对每个 $F_i$ 采用解析微分或\emph{经过验证的二阶自动微分}形成六乘六参数 Hessian 的区间包络 $[\mathcal H_i]_\ell$。用各元素绝对值上界的 Frobenius 范数向上舍入，取所有子盒最大值得到 $L_i$。若 $\hat\theta$ 到 $\Theta$ 的线段超出参数域，先对包含所有线段的凸包盒作同样的划分。
+\end{enumerate}
+\begin{proposition}[有限盒覆盖下的证书有效性]
+如果有限个闭子盒覆盖被认证参数域及全部所需 Taylor 线段，且每个子盒的逆矩阵与导数区间计算均成功并采用包含正确的向外舍入，则上述输出的 $\varepsilon_{G,j},L_i$ 分别满足式 \eqref{eq:gradcert} 与 Hessian 假设。对全部子盒逐项取并集上包络得到的证书具有确定性覆盖性。
+\end{proposition}
+\begin{proof}
+每个真参数点都属于至少一个子盒。包含正确的区间运算逐次包围该点处所有矩阵及导数运算结果，故逐元素绝对值上界及 Frobenius 上界包围真谱范数；对有限个子盒取最大值即覆盖整个域。Hessian 的论证相同。区间划分和运算\emph{成功}是命题前提，不等同于已证明给定算力、给定精度下的实时终止速度。
+\end{proof}
+\begin{remark}[严格性与保守性边界]
+给出上述算法规格并不代表已经得到数值 $\varepsilon_{G,j},L_i$，也不保证区间包络足够紧、能够以控制周期内的时间完成。工程实现必须报告实际参数盒、区间库及舍入模式、失败子盒数量、总耗时和证书数值，并以独立方法检查模型导数。若 $\Theta_k$ 是非盒型集合，用盒外包络可能显著增大余项与控制增益，需再研究紧界算法。
+\end{remark}
+
+\subsection{方法二：参数集合支持函数与严格 Taylor 余项}
+在指定状态 $z$ 下，考虑 $F_i(z,\theta)$ 对 $\theta$ 二次连续可微的区域，选定 $\hat\theta\in\Theta_k$，令 $\delta\theta=\theta-\hat\theta$。Taylor 公式给出
+\begin{equation}
+ F_i(z,\theta)-F_i(z,\hat\theta)
+ =J_i(z)\delta\theta+R_i(z,\delta\theta),\qquad
+ J_i(z)=\nabla_\theta F_i(z,\hat\theta)^\tr.
+\end{equation}
+\begin{assumption}[严格高阶余项]
+存在\emph{已经证明有效}的数值 $L_i(z,k)$，使整个线段族
+$\{\hat\theta+t(\theta-\hat\theta):\theta\in\Theta_k,\ t\in[0,1]\}$
+上的 Hessian 均满足 $\norm{\nabla_\theta^2F_i(z,\vartheta)}_2\le L_i(z,k)$。
+\end{assumption}
+定义最大参数半径上界 $r_k\ge\sup_{\theta\in\Theta_k}\norm{\theta-\hat\theta}_2$。支持函数定义为
+\begin{equation}
+ \sigma_{\Theta_k}(v)=\sup_{\theta\in\Theta_k}v^\tr\theta.
+\end{equation}
+记
+\begin{equation}
+ \beta_{i,\mathrm{lin}}=\max\left\{\sigma_{\Theta_k}(J_i^\tr)-J_i\hat\theta,
+ \sigma_{\Theta_k}(-J_i^\tr)+J_i\hat\theta\right\}.
+\end{equation}
+\begin{theorem}[支持函数--Taylor 认证误差界]
+在上述假设成立时，
+\begin{equation}
+ \boxed{\sup_{\theta\in\Theta_k}\abs{F_i(z,\theta)-F_i(z,\hat\theta)}\le
+ \bar\beta_i^{\mathrm{ST}}:=\beta_{i,\mathrm{lin}}+\frac12L_i(z,k)r_k^2.}
+ \label{eq:ST}
+\end{equation}
+\end{theorem}
+\begin{proof}
+积分型 Taylor 余项满足
+\begin{equation*}
+ R_i=\int_0^1(1-t)\delta\theta^\tr\nabla_\theta^2F_i(z,\hat\theta+t\delta\theta)\delta\theta\,\dd t,
+\end{equation*}
+故 $|R_i|\le\tfrac12L_i\norm{\delta\theta}^2\le\tfrac12L_ir_k^2$。线性项绝对值对整个集合的最大值恰为两个支持函数的最大值。相加即得结论。
+\end{proof}
+\begin{remark}[很重要的数值区别]
+若 $L_i$ 仅通过随机样本最大值计算，或 $r_k$ 仅用随机采样近似，则式 \eqref{eq:ST} 不再是严格证书。必须使用解析不等式、经过验证的区间算法或有证明的全局包络。普通 \texttt{fmincon} 的局部最优解也不能替代支持函数的全局最优值认证。
+\end{remark}
+
+\subsection{组合证书与非劣性}
+固定名义力矩 $u_0=F(z,\hat\theta)$。设 $\bar\beta_i^{\mathrm{ST}}$ 与 $\bar\beta_i^{\mathrm{safe}}$ 均已被严格证明为对同一 $|F_i(z,\theta)-F_i(z,\hat\theta)|$ 的有效上界，则定义
+\begin{equation}
+ \boxed{\bar\beta_i(z,k)=\min\{\bar\beta_i^{\mathrm{ST}}(z,k),\bar\beta_i^{\mathrm{safe}}(z,k)\}.}
+ \label{eq:minbound}
+\end{equation}
+\begin{proposition}[认证界的非劣性]
+若上述两个候选界对同一状态、同一名义力矩和同一参数集合都有效，那么 $\bar\beta_i$ 仍为有效界，并满足 $\bar\beta_i\le\bar\beta_i^{\mathrm{safe}}$。
+\end{proposition}
+\begin{proof}
+真实误差同时不超过两个有效界，所以不超过两者的最小值。后半部分由最小值定义立即得到。
+\end{proof}
+\begin{remark}
+该性质只能证明“认证数值不高于基线界”，\emph{不能单独推出}所有闭环情况下跟踪 RMSE、实际控制力矩或抖振都更低。若选用区间中点作为名义力矩 $u_0$ 而非 $F(z,\hat\theta)$，则当前两项半径均不能原样套用；可先使用 $\bar\beta_i(u_0) = \bar\beta_i(F(z,\hat\theta)) + |F_i(z,\hat\theta)-u_{0,i}|$ 的有效转换界，或直接对新中心重新认证。
+\end{remark}
+
+\subsection{名义力矩的极小极大选择}
+如果能够认证 $F_i$ 的上下端点 $\underline F_i\le F_i(z,\theta)\le\overline F_i$（全部 $\theta\in\Theta_k$），对这个\emph{认证区间}求解
+\begin{equation}
+ \min_{u_{0,i}\in\R}\max_{f\in[\underline F_i,\overline F_i]}\abs{f-u_{0,i}}
+\end{equation}
+的解为
+\begin{equation}
+ \boxed{u_{0,i}^\star=\frac{\underline F_i+\overline F_i}{2},\qquad
+ \beta_i^{\mathrm{interval}}=\frac{\overline F_i-\underline F_i}{2}.}
+ \label{eq:midpoint}
+\end{equation}
+\begin{proof}
+任意 $u$ 的最大绝对偏差等于 $\max\{|u-\underline F_i|,|u-\overline F_i|\}$，其下界为区间半宽，且取区间中点时达到该下界。
+\end{proof}
+\begin{remark}
+若 $[\underline F_i,\overline F_i]$ 是过度保守的外包络，那么式 \eqref{eq:midpoint} 只对外包络具有极小极大性质；并不等于真实可行力矩像集的精确极小极大解。执行器限幅和多关节耦合也需要另外分析。
+\end{remark}
+
+\section{滑模控制律与严谨稳定性分析}
+\subsection{理想符号滑模控制}
+在零动量约化模型 \eqref{eq:reducedzero} 中加入匹配外扰 $d$：
+\begin{equation}
+ M_r(q;\theta^\ast)\ddot q+C_r(q,\dot q;\theta^\ast)\dot q=\tau+d,
+ \qquad\abs{d_i(t)}\le\bar d_i.
+ \label{eq:smcplant}
+\end{equation}
+这里的 $d$ 仅是\emph{保持零动量约化结构有效}时额外出现的等效匹配输入（例如可独立建模的执行器残差）；对真实非零基座外力不作这一假设。这里“匹配”指外扰进入与关节驱动力矩同一二维通道；任意基座外力若引起非零动量，不能简单认为仍满足该独立零动量方程，应退回完整模型。假设每时刻可得到
+\begin{equation}
+ \abs{F_i(z(t),\theta^\ast)-u_{0,i}(z(t),k)}\le\bar\beta_i(z(t),k),
+ \label{eq:certvalid}
+\end{equation}
+设计
+\begin{equation}
+ \boxed{\tau=u_0-Ks-\rho\odot\operatorname{sgn}(s),\qquad
+ \rho_i=\bar\beta_i+\bar d_i+\eta_i,\quad K=K^\tr\succ0,\quad\eta_i>0.}
+ \label{eq:controller}
+\end{equation}
+这里 $\odot$ 表示逐通道乘积，$\operatorname{sgn}$ 作为微分包含意义下的不连续项理解。
+\begin{theorem}[滑模面有限时间可达性及关节渐近跟踪]
+假设：$(i)$ 真实参数在全部考虑时间内属于证书使用的集合；$(ii)$ 式 \eqref{eq:certvalid} 对全部控制时刻成立；$(iii)$ 外扰满足 \eqref{eq:smcplant} 的匹配上界；$(iv)$ $M_r$ 一致正定且有上界 $M_r\preceq\bar m I$，并具有式 \eqref{eq:Cr} 所示能量性质；$(v)$ 理想力矩命令可实现，解在所考虑工作域内存在且不逃逸。则在控制律 \eqref{eq:controller} 下滑模变量 $s$ 有限时间到达零集合。到达后 $e$ 指数趋于零，系统关节跟踪误差渐近稳定。
+\end{theorem}
+\begin{proof}
+由 $\dot q=\dot q_r+s$、$\ddot q=\ddot q_r+\dot s$，代入 \eqref{eq:smcplant} 得
+\begin{equation}
+ M_r\dot s+C_rs=\tau-F(z,\theta^\ast)+d.
+\end{equation}
+令 $\Delta=u_0-F(z,\theta^\ast)+d$，则 $|\Delta_i|\le\bar\beta_i+\bar d_i$。选 $V=\tfrac12s^\tr M_rs$，由能量恒等式
+\begin{align}
+ \dot V&=-s^\tr Ks-\sum_i\rho_i|s_i|+s^\tr\Delta\\
+ &\le-s^\tr Ks-\sum_i\eta_i|s_i|\\
+ &\le-\eta_{\min}\norm{s}_2\le-\eta_{\min}\sqrt{2V/\bar m}.
+\end{align}
+对非零 $V$ 积分得到到达时间
+\begin{equation}
+ \boxed{t_r\le\frac{\sqrt{2\bar m V(0)}}{\eta_{\min}}.}
+\end{equation}
+在右端对状态可测、局部有界且满足 Filippov 微分包含存在性条件、增益选择保证符号项可提供所需等效控制的前提下，$s=0$ 具备滑模意义下的保持条件；具体地在 $s=0$ 上逐通道所需等效切换幅值不超过 $\bar\beta_i+\bar d_i<\rho_i$。因此，在理想 Filippov/等效控制意义下 $s=0$ 保持成立，此时 $\dot e=-\Lambda e$，因 $\Lambda\succ0$，$e$ 指数趋于零。
+\end{proof}
+\begin{remark}
+上述定理仅证明\emph{滑模面有限时间到达}、跟踪误差\emph{渐近/指数}收敛，不是固定时间跟踪，也不涉及基座位姿独立跟踪。基座无驱动，因此不能将 $b$ 也视为具有独立受控轨迹的全驱动自由度。
+\end{remark}
+
+\begin{remark}[条件稳定性不等于全局稳定性]
+若认证只覆盖 $z\in Z$，上述结论只对\emph{实际闭环轨迹始终留在 $Z$} 的解成立。定理目前并未独立证明 $Z$ 是正向不变集；若声称局部稳定性，应另找正向不变子水平集，并验证参考信号及重构状态同样不越出 $Z$。除非证书及相应解的性质全局有效，不得宣称全局稳定。
+\end{remark}
+\subsection{连续饱和近似与最终有界性}
+取边界层 $\phi_i>0$，控制律改为
+\begin{equation}
+ \tau=u_0-Ks-\rho\odot\sat(s\oslash\phi),\quad
+ \sat(v)=\begin{cases}-1&v<-1\\v&|v|\le1\\1&v>1,\end{cases}
+\end{equation}
+$\oslash$ 为逐项除法。对标量 $x$ 可验证
+\begin{equation}
+ |x|-x\sat(x/\phi)\le\phi/4.
+\end{equation}
+因此
+\begin{equation}
+ \dot V\le-\lambda_{\min}(K)\norm{s}_2^2+
+ \sum_{i=1}^2\frac{\rho_i\phi_i}{4}.
+ \label{eq:ultimate}
+\end{equation}
+额外假设存在已证明的正向不变工作域或全局先验有界域，且参考轨迹及证书在其上有界，以避免用尚未证明的闭环有界性反过来假设增益有界。若控制期间各 $\rho_i$ 有统一上界 $\rho_i\le\bar\rho_i$，则令
+\begin{equation}
+ c=\sum_i\bar\rho_i\phi_i/4
+\end{equation}
+得到 $\dot V\le-\lambda_{\min}(K)\norm{s}^2+c$。再利用 $V\le\bar m\norm{s}^2/2$ 得
+\begin{equation}
+ \dot V\le-\frac{2\lambda_{\min}(K)}{\bar m}V+c.
+\end{equation}
+按比较引理
+\begin{equation}
+ \limsup_{t\to\infty}V(t)\le\frac{c\bar m}{2\lambda_{\min}(K)}.
+\end{equation}
+结合 $V\ge\underline m\norm{s}^2/2$ 可得严谨的渐近上界
+\begin{equation}
+ \boxed{\limsup_{t\to\infty}\norm{s(t)}_2\le
+ \sqrt{\frac{c\bar m}{\lambda_{\min}(K)\underline m}}.}
+ \label{eq:sbound}
+\end{equation}
+因 $\dot e=-\Lambda e+s$，若 $\Lambda$ 对称正定，则进一步有 $\limsup\norm e\le\limsup\norm{s}/\lambda_{\min}(\Lambda)$。这只是保守理论界，不能宣称实际 RMSE 一定按相同比例下降。若有力矩饱和、离散时延或状态估计误差，则必须额外将其影响放入剩余不确定性界或重新证明。
+
+\section{E 方向：在线集合更新及证书有效性}
+\subsection{数据形成的集合约束}
+给定线性于固定惯性参数的\emph{完整系统}动力学回归（本节使用完整坐标，而非假设约化模型直接线性）
+\begin{equation}
+ y_k=\Phi_k\theta^\ast+\epsilon_k,
+\end{equation}
+并\emph{已验证}测量/积分误差集合 $\epsilon_k\in\mathcal E_k$，定义
+\begin{equation}
+ \Theta_{k+1}=\Theta_k\cap\{\theta:y_k-\Phi_k\theta\in\mathcal E_k\}.
+ \label{eq:setupdate}
+\end{equation}
+加速度测量可以通过积分型或滤波型回归降低直接数值微分噪声，但相应积分/滤波误差的上界仍必须进入 $\mathcal E_k$。如果实验外扰未知且不在 $\mathcal E_k$ 内，更新不能保证正确。
+\begin{proposition}[在线集合包含性]
+若 $\theta^\ast\in\Theta_0$，且每个用于更新的数据样本均满足 $y_k-\Phi_k\theta^\ast\in\mathcal E_k$，则对所有 $k$，有 $\theta^\ast\in\Theta_k$ 且 $\Theta_{k+1}\subseteq\Theta_k$。
+\end{proposition}
+\begin{proof}
+使用数学归纳法。若 $\theta^\ast\in\Theta_k$ 且满足第 $k$ 次误差集合约束，则 $\theta^\ast$ 属于式 \eqref{eq:setupdate} 中两集合的交。因此其仍在 $\Theta_{k+1}$ 内；交集定义自动给出嵌套关系。
+\end{proof}
+\begin{remark}
+集合嵌套不代表\emph{沿时间的误差界数值必然减小}，因为 $F(z(t),\theta)$ 的状态 $z(t)$ 同时改变。只有固定同一个 $z$、同一个名义力矩定义，并在同一类误差优化问题下比较，才有相应单调性结论。
+\end{remark}
+
+\subsection{数字孪生与控制器的分工}
+\begin{equation}
+ \boxed{\text{物理状态同步}\ \longrightarrow\ \Theta_k\text{维护}\ \longrightarrow\ (u_0,\bar\beta,\mathcal Z_k)\text{认证}\ \longrightarrow\ \text{滑模控制器}.}
+\end{equation}
+$\mathcal Z_k$ 为证书有效的状态及参考输入工作域。数字孪生的角色不是无条件替代扰动观测器：它输出模型、允许的参数集合、误差边界和证书时效信息。即使在线集合更新频率低，快速控制层的 $\bar\beta(z(t),k)$ 仍须对\emph{当前状态}有效，或事先覆盖整段采样周期的工作域。
+
+\subsection{模型失效时的安全适用条件}
+若在线观测与工作集合不一致，说明当前模型及误差假设\emph{整体}与数据不一致，不能唯一归因于外扰、传感器故障或参数改变。可暂缓进一步收缩集合并切换至覆盖更大工作域的保守认证界。\textbf{然而：}如果真实参数或外扰也超出了后备集合，切换不能确保稳定；若存在检测时延及控制力矩饱和，更需要额外条件。本文不声称任意未建模故障下的闭环安全。
+
+\section{MATLAB 实施、数值验收与独立验证}
+\subsection{必须分别实施的两个动力学计算器}
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{全坐标计算器：}由式 \eqref{eq:p0}--\eqref{eq:fulldyn} 建立 $H(Q),h(Q,\dot Q)$；给定 $\tau$ 直接求解 $\ddot Q=H^{-1}(B\tau-h)$（实际编程用反斜线，不显式求逆）。
+\item \textbf{零动量约化计算器：}先对同一组物理参数独立建立 $M_r(q)$、Christoffel $C_r$，求解 $\ddot q=M_r^{-1}(\tau-C_r\dot q)$，并由完整动量约束重构 $\dot b$。与全坐标模型在零动量条件下比较。若两者使用相同的未审查公式不算真正独立验证。
+\end{enumerate}
+起步可用不同实现路径交叉校验，例如全系统雅可比能量法与独立牛顿--欧拉/质心动量法；后续实物验证应独立测试传感器时序和执行器实际力矩。
+
+\subsection{建议的测试项目及判据}
+\begin{table}[htbp]\centering\caption{研究阶段的数值验收项目（容差需根据无量纲化与数值积分器重新设定）}
+\begin{tabular}{p{.25\linewidth}p{.45\linewidth}p{.21\linewidth}}\toprule
+测试&判据与说明&证据类型\\\midrule
+惯性矩阵&$\norm{H-H^\tr}$ 接近数值零；采样点最小特征值为正&仅数值检查\\
+完整系统能量&自由运动下 $|T(t)-T(0)|$ 随积分步长减小而减小&数值一致性\\
+总线/角动量&无外力作用时 $P,L_O$ 在误差容差内保持常值&数值一致性\\
+完整--约化对照&同一零动量状态下 $\ddot q$ 一致&关键一致性测试\\
+灵敏度导数&符号/自动微分值与中心有限差分收敛一致&局部正确性\\
+认证界覆盖&已证明界之外，再进行参数顶点/随机/困难点压力测试&压力测试\emph{不是证明}\\
+界保守程度&与可认证全局最优界、严格区间界比较；记录上下界间隙&核心创新证据\\
+控制代价&峰值力矩、RMS、总变差、误差及饱和比例&闭环实验\\
+实时性&每次认证计算最大值、P95、内存和优化失败次数&工程证据\\\bottomrule
+\end{tabular}\end{table}
+
+\subsection{建议的 MATLAB 文件接口}
+\begin{verbatim}
+src/dynamics/planar_kinematics.m
+src/dynamics/planar_full_dynamics.m
+src/dynamics/planar_reduced_dynamics.m
+src/dynamics/planar_momentum.m
+src/uncertainty/certified_block_bound.m
+src/uncertainty/certified_mass_derivatives.m
+src/uncertainty/support_hessian_bound.m
+src/controllers/smc_certified.m
+tests/test_energy_momentum.m
+tests/test_full_vs_reduced.m
+tests/test_bound_coverage.m
+tests/test_mapping_F_vs_Falg.m
+experiments/run_bound_benchmarks.m
+experiments/run_smc_comparison.m
+\end{verbatim}
+第一阶段不要实现在线集合更新和滑模控制，先独立验收完整动力学以及约化一致性。
+
+\section{创新性审查与后续问题}
+\begin{enumerate}[leftmargin=2em]
+\item \textbf{已有数学：}Schur 补、动能雅可比建模、矩阵逆扰动不等式、Taylor 余项、支持函数、最坏区间中点、集合交集和常规滑模稳定性证明都属于成熟工具。
+\item \textbf{有研究价值但尚未证明的创新：}利用自由漂浮耦合矩阵块及物理参数关联，获得\emph{确实比经典严格基准更紧}且适合在线计算的控制误差上界。
+\item \textbf{不可直接声称的结论：}数字孪生等于新的观测器；任何参数集合都会收缩；采样覆盖率证明确定性界；更低理论增益保证更小实际 RMSE；平面模型证明全空间 $6+6$ 性能。
+\item \textbf{建议的下一项研究：}在固定质心的六参数模型上构造一个可精确求解的低维参数集合，建立 $\beta^\star$ 的经验证数值上下界；检查 $\bar\beta^{\mathrm{ST}}$ 是否较 $\bar\beta^{\mathrm{safe}}$ 明显更紧。如果高阶余项导致无优势，应研究利用 $A^{-1}$ 有理结构直接包络，而不是强行写成“低保守”结论。
+\end{enumerate}
+
+\section*{结语}
+本版修复了控制映射与认证对象不一致的问题，给出了对 $M_r$ 的导数进行严格包络时成立的整体范数证书，以及在明确假设下的滑模控制理论推导。它\emph{没有}替代模型公式的独立符号检查和严格界算法的数值认证，也不代表低保守性已经由实验确认。建议依据式 \eqref{eq:p0}--\eqref{eq:reduced} 先实现动力学，并将每次检查产生的数据和代码版本记录下来。
+
+\begin{thebibliography}{9}
+\bibitem{featherstone} R. Featherstone, \emph{Rigid Body Dynamics Algorithms}. Springer, 2008.
+\bibitem{spong} M. W. Spong, S. Hutchinson, and M. Vidyasagar, \emph{Robot Modeling and Control}. Wiley, 2006.
+\bibitem{slotine} J.-J. E. Slotine and W. Li, \emph{Applied Nonlinear Control}. Prentice Hall, 1991.
+\bibitem{wensing} P. M. Wensing, S. Kim, and J.-J. E. Slotine, ``Linear matrix inequalities for physically consistent inertial parameter identification: A statistical perspective on the mass distribution,'' \emph{IEEE Robotics and Automation Letters}, 2018.
+\bibitem{christidi} O.-O. Christidi-Loumpasefski and E. Papadopoulos, ``On the parameter identification of free-flying space manipulator systems,'' \emph{Robotics and Autonomous Systems}, vol. 160, 104310, 2023.
+\end{thebibliography}
+\end{document}
