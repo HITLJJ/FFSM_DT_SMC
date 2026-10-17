@@ -7,6 +7,7 @@ codegen/
 # Generated stage-1 artifacts (keep the directory marker)
 results/stage1/
 results/stage2/
+results/stage3a/
 
 # Temporary PDF inspection output
 tmp/
